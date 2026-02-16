@@ -1,0 +1,30 @@
+[Unit]
+Description=MOXA Configuration Server
+Documentation=https://github.com/your-org/moxa-config
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/moxa-config/moxa-config
+Environment=MOXA_PORT=8080
+Environment=MOXA_CONFIGDIR=/etc/moxa-config
+Environment=MOXA_BACKUPDIR=/var/moxa-config/backups
+Environment=MOXA_LOGFILE=/var/log/moxa-config.log
+
+Restart=always
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
+
+StandardOutput=journal
+StandardError=journal
+
+NoNewPrivileges=false
+ProtectSystem=false
+ProtectHome=false
+ReadWritePaths=/etc/network /var/moxa-config /var/log
+
+[Install]
+WantedBy=multi-user.target

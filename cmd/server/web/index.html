@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOXA Config</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>MOXA Config</h1>
+        <span id="hostname"></span>
+    </header>
+
+    <nav>
+        <button class="tab active" data-tab="network">Réseau</button>
+        <button class="tab" data-tab="serial">Ports Série</button>
+    </nav>
+
+    <main>
+        <section id="network" class="panel active">
+            <h2>Configuration Réseau</h2>
+            <div id="network-list" class="card-list"></div>
+        </section>
+
+        <section id="serial" class="panel">
+            <h2>Configuration Ports Série</h2>
+            <div id="serial-list" class="card-list"></div>
+        </section>
+    </main>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title"></h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn secondary" onclick="closeModal()">Annuler</button>
+                <button class="btn primary" id="modal-save">Appliquer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
