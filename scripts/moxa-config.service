@@ -1,6 +1,6 @@
 [Unit]
 Description=MOXA Configuration Server
-Documentation=https://github.com/your-org/moxa-config
+Documentation=https://github.com/bfouilhac/MoxamonGO
 After=network.target network-online.target
 Wants=network-online.target
 
