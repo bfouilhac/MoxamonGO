@@ -76,7 +76,7 @@ func (s *SerialService) Configure(cfg models.SerialPort) error {
 	return s.persistConfig(cfg)
 }
 
-// applyMode configure le mode RS232/422/485 via setinterface MOXA.
+// applyMode configure le mode RS232/422/485 via les commandes MOXA.
 func (s *SerialService) applyMode(device, mode string) error {
 	portNum := "0"
 	if strings.HasSuffix(device, "1") {
@@ -86,22 +86,22 @@ func (s *SerialService) applyMode(device, mode string) error {
 	modeArg := ""
 	switch mode {
 	case "RS232":
-		modeArg = "rs232"
-	case "RS422":
-		modeArg = "rs422"
+		modeArg = "0"
 	case "RS485-2W":
-		modeArg = "rs485-2w"
-	case "RS485-4W":
-		modeArg = "rs485-4w"
+		modeArg = "1"
+	case "RS422", "RS485-4W":
+		modeArg = "2"
 	default:
 		return fmt.Errorf("mode inconnu: %s", mode)
 	}
 
-	cmd := exec.Command("setinterface", portNum, modeArg)
+	// Priorité : mx-uart-ctl (commande MOXA officielle)
+	cmd := exec.Command("mx-uart-ctl", "-p", portNum, "-m", modeArg)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		cmd = exec.Command("mx-set-serial-mode", portNum, modeArg)
+		// Fallback : setinterface /dev/ttyMX <mode>
+		cmd = exec.Command("setinterface", device, modeArg)
 		if out, err = cmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("setinterface error: %s - %w", string(out), err)
+			return fmt.Errorf("échec configuration mode: %s - %w", string(out), err)
 		}
 	}
 	return nil
@@ -291,34 +291,42 @@ func (s *SerialService) readCurrentConfig(device string) (*models.SerialPort, er
 	return cfg, nil
 }
 
-// readCurrentMode lit le mode actuel via getinterface MOXA.
+// readCurrentMode lit le mode actuel via les commandes MOXA.
 func (s *SerialService) readCurrentMode(device string) string {
 	portNum := "0"
 	if strings.HasSuffix(device, "1") {
 		portNum = "1"
 	}
 
-	out, err := exec.Command("getinterface", portNum).Output()
-	if err != nil {
-		out, err = exec.Command("mx-get-serial-mode", portNum).Output()
-		if err != nil {
+	// Priorité : mx-uart-ctl (commande MOXA officielle)
+	out, err := exec.Command("mx-uart-ctl", "-p", portNum).Output()
+	if err == nil {
+		output := strings.ToLower(string(out))
+		switch {
+		case strings.Contains(output, "rs485-2w"):
+			return "RS485-2W"
+		case strings.Contains(output, "rs422") || strings.Contains(output, "rs485-4w"):
+			return "RS422"
+		case strings.Contains(output, "rs232"):
 			return "RS232"
 		}
 	}
 
-	output := strings.ToLower(strings.TrimSpace(string(out)))
-	switch {
-	case strings.Contains(output, "rs485-2w") || strings.Contains(output, "rs485_2w"):
-		return "RS485-2W"
-	case strings.Contains(output, "rs485-4w") || strings.Contains(output, "rs485_4w"):
-		return "RS485-4W"
-	case strings.Contains(output, "rs485"):
-		return "RS485-2W"
-	case strings.Contains(output, "rs422"):
-		return "RS422"
-	default:
-		return "RS232"
+	// Fallback : getinterface /dev/ttyMX
+	out, err = exec.Command("getinterface", device).Output()
+	if err == nil {
+		output := strings.ToLower(string(out))
+		switch {
+		case strings.Contains(output, "rs485-2w"):
+			return "RS485-2W"
+		case strings.Contains(output, "rs422") || strings.Contains(output, "rs485-4w"):
+			return "RS422"
+		case strings.Contains(output, "rs232"):
+			return "RS232"
+		}
 	}
+
+	return "RS232"
 }
 
 func (s *SerialService) readFromStty(device string) (*models.SerialPort, error) {
