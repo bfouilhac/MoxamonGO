@@ -74,23 +74,16 @@ go version
 
 ### Étape 2 : Préparer l'environnement
 
-Place toi dans le répertoire que tu veux puis : 
+Place toi dans le répertoire que tu veux puis crée le répertoire `moxa-build` : 
 
 ```powershell
 mkdir moxa-build
 cd moxa-build
 ```
 
-Enfin place le fichier `moxa-config-src.tar.gz` dans ce dossier.
+Dans ce dossier, on stockera tout le code téléchargé (dossiers `cmd`, `internal`, `scripts` ...)
 
-### Étape 3 : Extraire les sources
-
-```powershell
-tar xzf moxa-config-src.tar.gz
-cd moxa-config
-```
-
-### Étape 4 : Compiler pour MOXA (ARM)
+### Étape 3 : Compiler pour MOXA (ARM)
 
 ```powershell
 $env:GOOS = "linux"
@@ -101,9 +94,9 @@ $env:CGO_ENABLED = "0"
 go build -ldflags="-s -w" -o moxa-config ./cmd/server
 ```
 
-Un fichier `moxa-config` (sans extension) est créé dans le dossier.
+Un fichier `moxa-config` (sans extension) est créé dans le dossier = c'est le binaire exécutable. 
 
-### Étape 5 : Créer le package de déploiement
+### Étape 4 : Créer le package de déploiement
 
 Scénario fictif pour une version 1.0.0 du logiciel :
 
@@ -114,7 +107,7 @@ cp scripts/install.sh moxa-config-1.0.0/
 tar czf moxa-config-1.0.0.tar.gz moxa-config-1.0.0
 ```
 
-### Étape 6 : Transférer sur le MOXA
+### Étape 5 : Transférer sur le MOXA
 
 Remplace `<IP_MOXA>` par l'adresse IP de ton appareil :
 
@@ -124,7 +117,7 @@ scp moxa-config-1.0.0.tar.gz moxa@<IP_MOXA>:/tmp/
 
 Mot de passe par défaut : `moxa`
 
-### Étape 7 : Installer sur le MOXA
+### Étape 6 : Installer sur le MOXA
 
 Connecte-toi en SSH :
 
@@ -141,17 +134,13 @@ cd moxa-config-1.0.0
 sudo sh ./install.sh
 ```
 
-### Étape 8 : Accéder à l'interface
+### Étape 7 : Accéder à l'interface
 
 Ouvre ton navigateur à l'adresse :
 
 ```
 http://<IP_MOXA>:8080
 ```
-
-## Mise à jour
-
-Pour mettre à jour une installation existante, répète les étapes 4 à 7. Le script d'installation arrête automatiquement l'ancienne version avant d'installer la nouvelle.
 
 ## Utilisation
 
@@ -267,9 +256,11 @@ tail -f /var/log/moxa-config.log
 ## Désinstallation
 
 ```bash
-sudo /etc/init.d/moxa-config stop
+sudo systemctl stop moxa-config
+sudo systemctl disable moxa-config
+sudo rm /etc/systemd/system/moxa-config.service
+sudo systemctl daemon-reload
 sudo rm -rf /opt/moxa-config
-sudo rm /etc/init.d/moxa-config
 ```
 
 Les configurations sont conservées dans `/etc/moxa-config`.
