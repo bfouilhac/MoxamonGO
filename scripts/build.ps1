@@ -9,7 +9,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "=== MoxamonGO Server - Build & Deploy ===" -ForegroundColor Cyan
+Write-Host "MoxamonGO Server - Build & Deploy" -ForegroundColor Cyan
 Write-Host "Cible: $User@$Address" -ForegroundColor Yellow
 Write-Host ""
 
@@ -79,7 +79,7 @@ Remove-Item -Force moxa-config -ErrorAction SilentlyContinue
 Remove-Item -Force $packageFile -ErrorAction SilentlyContinue
 
 Write-Host ""
-Write-Host "=== Build termine ===" -ForegroundColor Cyan
+Write-Host "Build termine" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Scanner disponible: .\moxa-scanner.exe" -ForegroundColor Yellow
 Write-Host ""

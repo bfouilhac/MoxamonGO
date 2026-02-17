@@ -24,7 +24,7 @@ type DeviceInfo struct {
 }
 
 func main() {
-	fmt.Println("=== MOXA UC Scanner ===")
+	fmt.Println("MoxamonGO Scanner")
 	fmt.Println("Recherche des UC sur le réseau...")
 	fmt.Println()
 
@@ -53,27 +53,34 @@ func scan() ([]DeviceInfo, error) {
 	}
 	defer conn.Close()
 
-	broadcastAddr := &net.UDPAddr{
-		IP:   net.IPv4bcast,
-		Port: DiscoveryPort,
-	}
+	// Envoyer sur toutes les interfaces
+	interfaces, _ := net.Interfaces()
+	for _, iface := range interfaces {
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
 
-	_, err = conn.WriteToUDP([]byte(DiscoveryRequest), broadcastAddr)
-	if err != nil {
-		interfaces, _ := net.Interfaces()
-		for _, iface := range interfaces {
-			addrs, _ := iface.Addrs()
-			for _, addr := range addrs {
-				if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.To4() != nil && !ipnet.IP.IsLoopback() {
-					broadcast := getBroadcastAddr(ipnet)
-					if broadcast != nil {
-						broadcastAddr.IP = broadcast
-						conn.WriteToUDP([]byte(DiscoveryRequest), broadcastAddr)
+		addrs, _ := iface.Addrs()
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.To4() != nil && !ipnet.IP.IsLoopback() {
+				broadcast := getBroadcastAddr(ipnet)
+				if broadcast != nil {
+					broadcastAddr := &net.UDPAddr{
+						IP:   broadcast,
+						Port: DiscoveryPort,
 					}
+					conn.WriteToUDP([]byte(DiscoveryRequest), broadcastAddr)
 				}
 			}
 		}
 	}
+
+	// Aussi envoyer en broadcast global
+	globalBroadcast := &net.UDPAddr{
+		IP:   net.IPv4bcast,
+		Port: DiscoveryPort,
+	}
+	conn.WriteToUDP([]byte(DiscoveryRequest), globalBroadcast)
 
 	conn.SetReadDeadline(time.Now().Add(ScanTimeout))
 
@@ -81,7 +88,7 @@ func scan() ([]DeviceInfo, error) {
 	buf := make([]byte, 1024)
 
 	for {
-		n, _, err := conn.ReadFromUDP(buf)
+		n, remoteAddr, err := conn.ReadFromUDP(buf)
 		if err != nil {
 			break
 		}
@@ -89,6 +96,11 @@ func scan() ([]DeviceInfo, error) {
 		var info DeviceInfo
 		if err := json.Unmarshal(buf[:n], &info); err != nil {
 			continue
+		}
+
+		// Utiliser l'IP source si l'IP dans la réponse est vide ou différente
+		if info.IPAddress == "" {
+			info.IPAddress = remoteAddr.IP.String()
 		}
 
 		devices[info.IPAddress] = info

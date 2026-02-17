@@ -37,7 +37,14 @@ func (s *NetworkService) ListInterfaces() ([]models.NetworkInterface, error) {
 		if iface.Flags&net.FlagLoopback != 0 {
 			continue
 		}
-		if !strings.HasPrefix(iface.Name, "eth") && !strings.HasPrefix(iface.Name, "lan") {
+
+		// Inclure eth*, lan*, br*, bridge*, wlan*
+		name := iface.Name
+		if !strings.HasPrefix(name, "eth") &&
+			!strings.HasPrefix(name, "lan") &&
+			!strings.HasPrefix(name, "br") &&
+			!strings.HasPrefix(name, "bridge") &&
+			!strings.HasPrefix(name, "wlan") {
 			continue
 		}
 
