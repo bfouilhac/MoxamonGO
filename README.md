@@ -78,41 +78,19 @@ Place toi dans le répertoire que tu veux puis on stocke tout le code téléchar
 
 Enfin, depuis l'explorateur de fichier, clique sur la barre de chemin au dessus des fichiers puis tape `powershell`. Ça permet d'ouvrir le powershell directement dans le dossier qui contient tout le code
 
-### Étape 3 : Compiler pour MOXA (ARM)
+### Étape 3 : Lancer le script de compilation
+
+Une fois le powershell ouvert dans le bon dossier, faire la commande :
 
 ```powershell
-$env:GOOS = "linux"
-$env:GOARCH = "arm"
-$env:GOARM = "7"
-$env:CGO_ENABLED = "0"
-
-go build -ldflags="-s -w" -o moxa-config ./cmd/server
+.\scripts\build.ps1 -a <IP_MOXA> 
 ```
 
-Un fichier `moxa-config` (sans extension) est créé dans le dossier = c'est le binaire exécutable. 
+En renseignant l'adresse IPv4 de l'appareil.
 
-### Étape 4 : Créer le package de déploiement
+Ce script permet de paramétrer les variables, lancer le build avec Go et construire & copier l'archive sur l'appareil. 
 
-Scénario fictif pour une version 1.0.0 du logiciel :
-
-```powershell
-mkdir moxa-config-1.0.0
-cp moxa-config moxa-config-1.0.0/
-cp scripts/install.sh moxa-config-1.0.0/
-tar czf moxa-config-1.0.0.tar.gz moxa-config-1.0.0
-```
-
-### Étape 5 : Transférer sur le MOXA
-
-Remplace `<IP_MOXA>` par l'adresse IP de ton appareil :
-
-```powershell
-scp moxa-config-1.0.0.tar.gz moxa@<IP_MOXA>:/tmp/
-```
-
-Mot de passe par défaut : `moxa`
-
-### Étape 6 : Installer sur le MOXA
+### Étape 4 : Installer sur le MOXA
 
 Connecte-toi en SSH :
 
@@ -123,13 +101,10 @@ ssh moxa@<IP_MOXA>
 Puis exécute :
 
 ```bash
-cd /tmp
-tar xzf moxa-config-1.0.0.tar.gz
-cd moxa-config-1.0.0
-sudo sh ./install.sh
+cd /tmp && tar xzf moxa-config-1.0.0.tar.gz && cd moxa-config-1.0.0 && sudo sh ./install.sh
 ```
 
-### Étape 7 : Accéder à l'interface
+### Étape 5 : Accéder à l'interface
 
 Ouvre ton navigateur à l'adresse :
 
