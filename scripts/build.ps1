@@ -9,7 +9,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "=== MOXA Config Server - Build & Deploy ===" -ForegroundColor Cyan
+Write-Host "MOXA Config Server - Build & Deploy" -ForegroundColor Cyan
 Write-Host "Cible: $User@$Address" -ForegroundColor Yellow
 Write-Host ""
 
@@ -39,6 +39,10 @@ New-Item -ItemType Directory -Path $packageDir | Out-Null
 Copy-Item moxa-config "$packageDir/"
 Copy-Item scripts/install.sh "$packageDir/"
 
+$content = Get-Content "$packageDir/install.sh" -Raw
+$content = $content -replace "`r`n", "`n"
+[System.IO.File]::WriteAllText("$packageDir/install.sh", $content, [System.Text.Encoding]::UTF8)
+
 tar czf $packageFile $packageDir
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Erreur creation archive" -ForegroundColor Red
@@ -61,7 +65,7 @@ Remove-Item -Force moxa-config -ErrorAction SilentlyContinue
 Remove-Item -Force $packageFile -ErrorAction SilentlyContinue
 
 Write-Host ""
-Write-Host "=== Transfert termine ===" -ForegroundColor Cyan
+Write-Host "Transfert termine" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Pour installer, connecte-toi puis execute :" -ForegroundColor Yellow
 Write-Host "  ssh $User@$Address" -ForegroundColor White

@@ -226,9 +226,7 @@ print_summary() {
     IP=$(get_ip)
 
     echo ""
-    echo "=========================================="
     echo "  Installation terminée avec succès!"
-    echo "=========================================="
     echo ""
     echo "  Interface web: http://${IP:-localhost}:$PORT"
     echo "  API réseau:    http://${IP:-localhost}:$PORT/api/network"
