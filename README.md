@@ -1,4 +1,4 @@
-# MOXA Config Server
+# MoxamonGo Server
 
 Serveur de configuration web pour équipements MOXA (UC-8112-LX, UC-2100, UC-3100, UC-5100 series).
 
@@ -6,7 +6,7 @@ Interface légère permettant de configurer à distance les interfaces réseau e
 
 ## Fonctionnalités
 
-### Configuration Réseau
+### Configuration réseau
 
 - Affichage des interfaces réseau (eth0, eth1, lan0, etc.)
 - Configuration IP statique ou DHCP
@@ -16,7 +16,7 @@ Interface légère permettant de configurer à distance les interfaces réseau e
 - Affichage de l'adresse MAC et du statut (up/down)
 - Sauvegarde automatique avant modification
 
-### Configuration Ports Série
+### Configuration ports série
 
 - Détection automatique des ports physiques MOXA (ttyM0, ttyM1)
 - Sélection du mode : RS232, RS422, RS485-2W, RS485-4W
@@ -120,7 +120,7 @@ L'interface comporte deux onglets :
 
 **Réseau** : Liste les interfaces réseau détectées. Cliquer sur "Configurer" pour modifier les paramètres IP, masque, passerelle et DNS.
 
-**Ports Série** : Liste les ports ttyM0 et ttyM1. Cliquer sur "Configurer" pour modifier le mode (RS232/422/485) et les paramètres de communication.
+**Ports série** : Liste les ports ttyM0 et ttyM1. Cliquer sur "Configurer" pour modifier le mode (RS232/422/485) et les paramètres de communication.
 
 ### API REST
 
@@ -134,7 +134,7 @@ L'interface comporte deux onglets :
 | GET | `/api/network/backups` | Liste les sauvegardes |
 | POST | `/api/network/restore/{name}` | Restaure un backup |
 
-#### Ports Série
+#### Ports série
 
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|

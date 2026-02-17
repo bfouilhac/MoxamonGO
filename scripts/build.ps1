@@ -9,7 +9,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "MOXA Config Server - Build & Deploy" -ForegroundColor Cyan
+Write-Host "MoxamonGo Server - Build & Deploy" -ForegroundColor Cyan
 Write-Host "Cible: $User@$Address" -ForegroundColor Yellow
 Write-Host ""
 
