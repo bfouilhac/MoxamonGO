@@ -40,11 +40,15 @@ func (s *SerialService) ListPorts() ([]models.SerialPort, error) {
 			StopBits: 1,
 			Parity:   "none",
 			FlowCtrl: "none",
-			Mode:     "RS232",
+			Mode:     s.readCurrentMode(dev),
 		}
 
-		if cfg, err := s.readCurrentConfig(dev); err == nil {
-			port = *cfg
+		if cfg, err := s.readFromStty(dev); err == nil {
+			port.BaudRate = cfg.BaudRate
+			port.DataBits = cfg.DataBits
+			port.StopBits = cfg.StopBits
+			port.Parity = cfg.Parity
+			port.FlowCtrl = cfg.FlowCtrl
 		}
 
 		ports = append(ports, port)

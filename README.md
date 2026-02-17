@@ -74,14 +74,9 @@ go version
 
 ### Étape 2 : Préparer l'environnement
 
-Place toi dans le répertoire que tu veux puis crée le répertoire `moxa-build` : 
+Place toi dans le répertoire que tu veux puis on stocke tout le code téléchargé (dossiers `cmd`, `internal`, `scripts` ...) 
 
-```powershell
-mkdir moxa-build
-cd moxa-build
-```
-
-Dans ce dossier, on stockera tout le code téléchargé (dossiers `cmd`, `internal`, `scripts` ...)
+Enfin, depuis l'explorateur de fichier, clique sur la barre de chemin au dessus des fichiers puis tape `powershell`. Ça permet d'ouvrir le powershell directement dans le dossier qui contient tout le code
 
 ### Étape 3 : Compiler pour MOXA (ARM)
 
