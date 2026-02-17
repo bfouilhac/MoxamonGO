@@ -155,13 +155,13 @@ L'interface comporte deux onglets :
 Lister les interfaces réseau :
 
 ```bash
-curl http://192.168.1.100:8080/api/network/interfaces
+curl http://<IP_MOXA>:8080/api/network/interfaces
 ```
 
 Configurer eth0 en statique avec DNS :
 
 ```bash
-curl -X POST http://192.168.1.100:8080/api/network/configure \
+curl -X POST http://<IP_MOXA>:8080/api/network/configure \
   -H "Content-Type: application/json" \
   -d '{
     "name": "eth0",
@@ -176,7 +176,7 @@ curl -X POST http://192.168.1.100:8080/api/network/configure \
 Configurer eth1 en DHCP :
 
 ```bash
-curl -X POST http://192.168.1.100:8080/api/network/configure \
+curl -X POST http://<IP_MOXA>:8080/api/network/configure \
   -H "Content-Type: application/json" \
   -d '{"name": "eth1", "dhcp": true}'
 ```
@@ -184,7 +184,7 @@ curl -X POST http://192.168.1.100:8080/api/network/configure \
 Configurer un port série en RS485 :
 
 ```bash
-curl -X POST http://192.168.1.100:8080/api/serial/configure \
+curl -X POST http://<IP_MOXA>:8080/api/serial/configure \
   -H "Content-Type: application/json" \
   -d '{
     "device": "/dev/ttyM0",
