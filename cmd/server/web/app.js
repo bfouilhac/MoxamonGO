@@ -14,12 +14,16 @@ const API = {
 };
 
 let serialOptions = null;
+let autoRefreshInterval = null;
+let networkData = [];
+let serialData = [];
+const AUTO_REFRESH_DELAY = 3000;
 
 async function init() {
-    await loadSystemInfo();
     await loadNetworkInterfaces();
     await loadSerialPorts();
     setupTabs();
+    setupAutoRefresh();
 }
 
 function setupTabs() {
@@ -33,11 +37,37 @@ function setupTabs() {
     });
 }
 
-async function loadSystemInfo() {
-    const res = await API.get('/system/info');
-    if (res.success) {
-        document.getElementById('hostname').textContent = res.data.hostname;
+function setupAutoRefresh() {
+    const toggle = document.getElementById('auto-refresh-toggle');
+
+    function startAutoRefresh() {
+        if (autoRefreshInterval) return;
+        autoRefreshInterval = setInterval(() => {
+            const activeTab = document.querySelector('.tab.active');
+            if (activeTab.dataset.tab === 'network') {
+                refreshNetworkData();
+            } else {
+                refreshSerialData();
+            }
+        }, AUTO_REFRESH_DELAY);
     }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    }
+
+    toggle.addEventListener('change', () => {
+        if (toggle.checked) {
+            startAutoRefresh();
+        } else {
+            stopAutoRefresh();
+        }
+    });
+
+    startAutoRefresh();
 }
 
 async function loadNetworkInterfaces() {
@@ -55,8 +85,26 @@ async function loadNetworkInterfaces() {
         return;
     }
 
-    container.innerHTML = res.data.map(iface => `
-        <div class="card">
+    networkData = res.data;
+    renderNetworkInterfaces();
+}
+
+async function refreshNetworkData() {
+    const res = await API.get('/network/interfaces');
+    if (!res.success || !res.data) return;
+
+    const hasChanged = JSON.stringify(networkData) !== JSON.stringify(res.data);
+    if (hasChanged) {
+        networkData = res.data;
+        renderNetworkInterfaces();
+    }
+}
+
+function renderNetworkInterfaces() {
+    const container = document.getElementById('network-list');
+
+    container.innerHTML = networkData.map(iface => `
+        <div class="card" data-id="${iface.name}">
             <div class="card-header">
                 <h3>${iface.name}</h3>
                 <span class="status ${iface.status}">${iface.status}</span>
@@ -114,8 +162,26 @@ async function loadSerialPorts() {
         return;
     }
 
-    container.innerHTML = res.data.map(port => `
-        <div class="card">
+    serialData = res.data;
+    renderSerialPorts();
+}
+
+async function refreshSerialData() {
+    const res = await API.get('/serial/ports');
+    if (!res.success || !res.data) return;
+
+    const hasChanged = JSON.stringify(serialData) !== JSON.stringify(res.data);
+    if (hasChanged) {
+        serialData = res.data;
+        renderSerialPorts();
+    }
+}
+
+function renderSerialPorts() {
+    const container = document.getElementById('serial-list');
+
+    container.innerHTML = serialData.map(port => `
+        <div class="card" data-id="${port.device}">
             <div class="card-header">
                 <h3>${port.device}</h3>
             </div>
@@ -146,7 +212,7 @@ async function loadSerialPorts() {
 
 function editNetwork(iface) {
     const dnsValue = (iface.dns && iface.dns.length > 0) ? iface.dns.join(', ') : '';
-    
+
     document.getElementById('modal-title').textContent = `Configurer ${iface.name}`;
     document.getElementById('modal-body').innerHTML = `
         <form id="network-form">
@@ -190,7 +256,7 @@ async function saveNetwork() {
     const form = document.getElementById('network-form');
     const dnsInput = form.dns.value.trim();
     const dnsArray = dnsInput ? dnsInput.split(',').map(s => s.trim()).filter(s => s) : [];
-    
+
     const data = {
         name: form.name.value,
         dhcp: form.dhcp.checked,
