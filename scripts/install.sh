@@ -202,13 +202,13 @@ verify_installation() {
     sleep 2
 
     if command -v curl >/dev/null 2>&1; then
-        if curl -s "http://localhost:$PORT/api/health" | grep -q "ok"; then
+        if curl -s "https://localhost:$PORT/api/health" | grep -q "ok"; then
             log_info "Service opérationnel!"
         else
             log_warn "Service démarré mais health check échoué"
         fi
     elif command -v wget >/dev/null 2>&1; then
-        if wget -qO- "http://localhost:$PORT/api/health" | grep -q "ok"; then
+        if wget -qO- "https://localhost:$PORT/api/health" | grep -q "ok"; then
             log_info "Service opérationnel!"
         else
             log_warn "Service démarré mais health check échoué"
@@ -228,9 +228,9 @@ print_summary() {
     echo ""
     echo "  Installation terminée avec succès!"
     echo ""
-    echo "  Interface web: http://${IP:-localhost}:$PORT"
-    echo "  API réseau:    http://${IP:-localhost}:$PORT/api/network"
-    echo "  API série:     http://${IP:-localhost}:$PORT/api/serial"
+    echo "  Interface web: https://${IP:-localhost}:$PORT"
+    echo "  API réseau:    https://${IP:-localhost}:$PORT/api/network"
+    echo "  API série:     https://${IP:-localhost}:$PORT/api/serial"
     echo ""
     echo "  Commandes utiles:"
     case $(detect_init_system) in

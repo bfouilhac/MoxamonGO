@@ -19,11 +19,43 @@ let networkData = [];
 let serialData = [];
 const AUTO_REFRESH_DELAY = 3000;
 
+async function checkAuth() {
+    try {
+        const res = await fetch('/api/auth/check');
+        const data = await res.json();
+
+        if (!data.authenticated) {
+            window.location.href = '/login.html';
+            return false;
+        }
+
+        if (data.mustChange) {
+            window.location.href = '/login.html';
+            return false;
+        }
+
+        return true;
+    } catch (err) {
+        window.location.href = '/login.html';
+        return false;
+    }
+}
+
+function setupLogout() {
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login.html';
+    });
+}
+
 async function init() {
+    if (!await checkAuth()) return;
+
     await loadNetworkInterfaces();
     await loadSerialPorts();
     setupTabs();
     setupAutoRefresh();
+    setupLogout();
 }
 
 function setupTabs() {

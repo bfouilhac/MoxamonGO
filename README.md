@@ -1,4 +1,4 @@
-# MoxamonGo Server
+# MoxamonGO Server
 
 Serveur de configuration web pour équipements MOXA (UC-8112-LX, UC-2100, UC-3100, UC-5100 series).
 
@@ -109,7 +109,7 @@ cd /tmp && tar xzf moxa-config-1.0.0.tar.gz && cd moxa-config-1.0.0 && sudo sh .
 Ouvre ton navigateur à l'adresse :
 
 ```
-http://<IP_MOXA>:8080
+https://<IP_MOXA>:8080
 ```
 
 ## Utilisation
@@ -155,13 +155,13 @@ L'interface comporte deux onglets :
 Lister les interfaces réseau :
 
 ```bash
-curl http://<IP_MOXA>:8080/api/network/interfaces
+curl https://<IP_MOXA>:8080/api/network/interfaces
 ```
 
 Configurer eth0 en statique avec DNS :
 
 ```bash
-curl -X POST http://<IP_MOXA>:8080/api/network/configure \
+curl -X POST https://<IP_MOXA>:8080/api/network/configure \
   -H "Content-Type: application/json" \
   -d '{
     "name": "eth0",
@@ -176,7 +176,7 @@ curl -X POST http://<IP_MOXA>:8080/api/network/configure \
 Configurer eth1 en DHCP :
 
 ```bash
-curl -X POST http://<IP_MOXA>:8080/api/network/configure \
+curl -X POST https://<IP_MOXA>:8080/api/network/configure \
   -H "Content-Type: application/json" \
   -d '{"name": "eth1", "dhcp": true}'
 ```
@@ -184,7 +184,7 @@ curl -X POST http://<IP_MOXA>:8080/api/network/configure \
 Configurer un port série en RS485 :
 
 ```bash
-curl -X POST http://<IP_MOXA>:8080/api/serial/configure \
+curl -X POST https://<IP_MOXA>:8080/api/serial/configure \
   -H "Content-Type: application/json" \
   -d '{
     "device": "/dev/ttyM0",
