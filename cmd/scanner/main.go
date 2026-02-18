@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DiscoveryPort    = 5555
+	DiscoveryPort    = 54321
 	DiscoveryRequest = "MOXA_DISCOVER"
 	ScanTimeout      = 3 * time.Second
 )
@@ -39,9 +39,7 @@ func main() {
 		return
 	}
 
-	sort.Slice(devices, func(i, j int) bool {
-		return devices[i].IPAddress < devices[j].IPAddress
-	})
+	sort.Slice(devices, func(i, j int) bool { return devices[i].IPAddress < devices[j].IPAddress })
 
 	printTable(devices)
 }
@@ -53,34 +51,14 @@ func scan() ([]DeviceInfo, error) {
 	}
 	defer conn.Close()
 
-	// Envoyer sur toutes les interfaces
-	interfaces, _ := net.Interfaces()
-	for _, iface := range interfaces {
-		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
-			continue
-		}
-
-		addrs, _ := iface.Addrs()
-		for _, addr := range addrs {
-			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.To4() != nil && !ipnet.IP.IsLoopback() {
-				broadcast := getBroadcastAddr(ipnet)
-				if broadcast != nil {
-					broadcastAddr := &net.UDPAddr{
-						IP:   broadcast,
-						Port: DiscoveryPort,
-					}
-					conn.WriteToUDP([]byte(DiscoveryRequest), broadcastAddr)
-				}
-			}
-		}
-	}
-
-	// Aussi envoyer en broadcast global
-	globalBroadcast := &net.UDPAddr{
+	// Envoyer en broadcast global (255.255.255.255)
+	broadcastAddr := &net.UDPAddr{
 		IP:   net.IPv4bcast,
 		Port: DiscoveryPort,
 	}
-	conn.WriteToUDP([]byte(DiscoveryRequest), globalBroadcast)
+	if _, err := conn.WriteToUDP([]byte(DiscoveryRequest), broadcastAddr); err != nil {
+		return nil, fmt.Errorf("impossible d'envoyer le broadcast: %w", err)
+	}
 
 	conn.SetReadDeadline(time.Now().Add(ScanTimeout))
 
@@ -112,19 +90,6 @@ func scan() ([]DeviceInfo, error) {
 	}
 
 	return result, nil
-}
-
-func getBroadcastAddr(ipnet *net.IPNet) net.IP {
-	ip := ipnet.IP.To4()
-	if ip == nil {
-		return nil
-	}
-	mask := ipnet.Mask
-	broadcast := make(net.IP, 4)
-	for i := 0; i < 4; i++ {
-		broadcast[i] = ip[i] | ^mask[i]
-	}
-	return broadcast
 }
 
 func printTable(devices []DeviceInfo) {

@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -49,10 +50,11 @@ func (s *NetworkService) ListInterfaces() ([]models.NetworkInterface, error) {
 		}
 
 		ni := models.NetworkInterface{
-			Name:   iface.Name,
-			MAC:    iface.HardwareAddr.String(),
-			Status: s.getStatus(iface.Flags),
-			DNS:    dnsServers,
+			Name:         iface.Name,
+			MAC:          iface.HardwareAddr.String(),
+			Status:       s.getStatus(iface.Flags),
+			DNS:          dnsServers,
+			BridgeMaster: s.getBridgeMaster(iface.Name),
 		}
 
 		addrs, _ := iface.Addrs()
@@ -73,6 +75,11 @@ func (s *NetworkService) ListInterfaces() ([]models.NetworkInterface, error) {
 
 // Configure applique une nouvelle configuration à une interface.
 func (s *NetworkService) Configure(cfg models.NetworkInterface) error {
+	// Vérifier si l'interface est dans un bridge
+	if master := s.getBridgeMaster(cfg.Name); master != "" {
+		return fmt.Errorf("l'interface %s est esclave du bridge %s, configurez le bridge directement", cfg.Name, master)
+	}
+
 	if err := s.validateConfig(cfg); err != nil {
 		return err
 	}
@@ -382,4 +389,26 @@ func (s *NetworkService) ReadInterfacesFile() (map[string]models.NetworkInterfac
 	}
 
 	return result, scanner.Err()
+}
+
+// getBridgeMaster retourne le nom du bridge parent d'une interface, ou "" si aucun.
+func (s *NetworkService) getBridgeMaster(ifaceName string) string {
+	// Méthode 1: lire le lien symbolique /sys/class/net/<iface>/master
+	masterPath := fmt.Sprintf("/sys/class/net/%s/master", ifaceName)
+	if link, err := os.Readlink(masterPath); err == nil {
+		return filepath.Base(link)
+	}
+
+	// Méthode 2: parser "ip link show"
+	out, err := exec.Command("ip", "link", "show", ifaceName).Output()
+	if err != nil {
+		return ""
+	}
+
+	re := regexp.MustCompile(`master\s+(\w+)`)
+	if matches := re.FindStringSubmatch(string(out)); len(matches) > 1 {
+		return matches[1]
+	}
+
+	return ""
 }

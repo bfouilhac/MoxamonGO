@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DiscoveryPort    = 5555
+	DiscoveryPort    = 54321
 	DiscoveryRequest = "MOXA_DISCOVER"
 	MaxPacketSize    = 1024
 )
@@ -93,7 +93,7 @@ func (s *Service) listen() {
 }
 
 func (s *Service) respond(addr *net.UDPAddr) {
-	s.info.IPAddress = getLocalIP(addr)
+	s.info.IPAddress = getLocalIPForDiscovery()
 
 	response, err := json.Marshal(s.info)
 	if err != nil {
@@ -101,9 +101,18 @@ func (s *Service) respond(addr *net.UDPAddr) {
 		return
 	}
 
-	_, err = s.conn.WriteToUDP(response, addr)
-	if err != nil {
-		log.Printf("Discovery: erreur envoi réponse: %v", err)
+	// Répondre en unicast (fonctionne pour le même sous-réseau)
+	s.conn.WriteToUDP(response, addr)
+
+	// Aussi répondre en broadcast pour les scanners sur d'autres sous-réseaux
+	// Utiliser un socket dédié car le socket principal peut ne pas avoir SO_BROADCAST
+	broadcastConn, err := net.DialUDP("udp4", nil, &net.UDPAddr{
+		IP:   net.IPv4bcast,
+		Port: addr.Port,
+	})
+	if err == nil {
+		broadcastConn.Write(response)
+		broadcastConn.Close()
 	}
 }
 
@@ -135,13 +144,37 @@ func getDeviceInfo() (DeviceInfo, error) {
 	return info, nil
 }
 
-func getLocalIP(remoteAddr *net.UDPAddr) string {
-	conn, err := net.Dial("udp4", remoteAddr.String())
+func getLocalIPForDiscovery() string {
+	ifaces, err := net.Interfaces()
 	if err != nil {
 		return ""
 	}
-	defer conn.Close()
 
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-	return localAddr.IP.String()
+	// Chercher la première IP non-loopback (préférer eth0, br0)
+	var fallbackIP string
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
+
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.IP.To4() != nil {
+				ip := ipnet.IP.String()
+				// Préférer br0 ou eth0
+				if strings.HasPrefix(iface.Name, "br") || strings.HasPrefix(iface.Name, "eth") {
+					return ip
+				}
+				if fallbackIP == "" {
+					fallbackIP = ip
+				}
+			}
+		}
+	}
+
+	return fallbackIP
 }

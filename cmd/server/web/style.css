@@ -462,7 +462,7 @@ main {
 }
 
 .toggle input:checked + .slider {
-    background-color: #2596be;
+    background-color: #00887f;
 }
 
 .toggle input:checked + .slider:before {
@@ -476,7 +476,7 @@ main {
 
 /* Login page */
 .login-page {
-    background: linear-gradient(135deg, #1e7a9a 0%, #2596be 100%);
+    background: var(--primary);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -499,7 +499,7 @@ main {
 }
 
 .login-header h1 {
-    color: #2596be;
+    color: #00887f;
     margin: 0 0 8px 0;
     font-size: 1.8rem;
 }
@@ -532,7 +532,7 @@ main {
 
 .login-form input:focus {
     outline: none;
-    border-color: #2596be;
+    border-color: #00887f;
 }
 
 .btn.full-width {
@@ -584,4 +584,103 @@ main {
     display: flex;
     align-items: center;
     gap: 16px;
+}
+
+/* Bridge styles */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-header h2 {
+    margin: 0;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.badge.bridge {
+    background: #0887f5;
+    color: white;
+}
+
+.card.slave {
+    opacity: 0.7;
+    border-left: 3px solid #6b7280;
+}
+
+.card.slave .card-body {
+    color: #6b7280;
+}
+
+.card.bridge-card {
+    border-left: 3px solid #00887f;
+}
+
+.slave-info {
+    background: #f3f4f6;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.slave-info .value {
+    color: #00887f;
+    font-weight: 600;
+}
+
+.btn.danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn.danger:hover {
+    background: #c82333;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.checkbox-group-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem;
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #6b7280;
+    font-size: 0.8rem;
 }

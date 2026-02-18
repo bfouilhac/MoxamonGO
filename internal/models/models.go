@@ -3,14 +3,27 @@ package models
 
 // NetworkInterface représente la configuration d'une interface réseau.
 type NetworkInterface struct {
-	Name    string   `json:"name"`
-	IP      string   `json:"ip"`
-	Netmask string   `json:"netmask"`
-	Gateway string   `json:"gateway,omitempty"`
-	DNS     []string `json:"dns,omitempty"`
-	DHCP    bool     `json:"dhcp"`
-	Status  string   `json:"status,omitempty"`
-	MAC     string   `json:"mac,omitempty"`
+	Name         string   `json:"name"`
+	IP           string   `json:"ip"`
+	Netmask      string   `json:"netmask"`
+	Gateway      string   `json:"gateway,omitempty"`
+	DNS          []string `json:"dns,omitempty"`
+	DHCP         bool     `json:"dhcp"`
+	Status       string   `json:"status,omitempty"`
+	MAC          string   `json:"mac,omitempty"`
+	BridgeMaster string   `json:"bridgeMaster,omitempty"`
+}
+
+// Bridge représente la configuration d'un bridge réseau.
+type Bridge struct {
+	Name       string   `json:"name"`
+	Interfaces []string `json:"interfaces"`
+	IP         string   `json:"ip"`
+	Netmask    string   `json:"netmask"`
+	Gateway    string   `json:"gateway,omitempty"`
+	DNS        []string `json:"dns,omitempty"`
+	Status     string   `json:"status"`
+	MAC        string   `json:"mac,omitempty"`
 }
 
 // SerialPort représente la configuration d'un port série.

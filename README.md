@@ -231,6 +231,7 @@ sudo systemctl disable moxa-config
 sudo rm /etc/systemd/system/moxa-config.service
 sudo systemctl daemon-reload
 sudo rm -rf /opt/moxa-config  
+sudo reboot
 ```
 
 Les configurations sont conservées dans `/etc/moxa-config`.

@@ -71,9 +71,11 @@ func main() {
 
 	networkService := services.NewNetworkService(cfg.ConfigDir)
 	serialService := services.NewSerialService(cfg.ConfigDir)
+	bridgeService := services.NewBridgeService(cfg.ConfigDir, cfg.BackupDir)
 
 	networkHandler := handlers.NewNetworkHandler(networkService)
 	serialHandler := handlers.NewSerialHandler(serialService)
+	bridgeHandler := handlers.NewBridgeHandler(bridgeService)
 
 	mux := http.NewServeMux()
 
@@ -87,12 +89,14 @@ func main() {
 	apiMux := http.NewServeMux()
 	apiMux.Handle("/api/network/", networkHandler)
 	apiMux.Handle("/api/serial/", serialHandler)
+	apiMux.Handle("/api/bridge/", bridgeHandler)
 	apiMux.HandleFunc("/api/system/info", handleSystemInfo)
 	apiMux.HandleFunc("/api/health", handleHealth)
 
 	// Appliquer le middleware d'authentification aux routes API
 	mux.Handle("/api/network/", authService.Middleware(apiMux))
 	mux.Handle("/api/serial/", authService.Middleware(apiMux))
+	mux.Handle("/api/bridge/", authService.Middleware(apiMux))
 	mux.Handle("/api/system/", authService.Middleware(apiMux))
 	mux.Handle("/api/health", authService.Middleware(apiMux))
 

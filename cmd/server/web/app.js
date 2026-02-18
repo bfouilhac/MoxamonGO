@@ -135,13 +135,32 @@ async function refreshNetworkData() {
 function renderNetworkInterfaces() {
     const container = document.getElementById('network-list');
 
-    container.innerHTML = networkData.map(iface => `
-        <div class="card" data-id="${iface.name}">
+    container.innerHTML = networkData.map(iface => {
+        const isBridge = iface.name.startsWith('br');
+        const isSlave = iface.bridgeMaster && iface.bridgeMaster !== '';
+        const badgeHtml = isBridge ? '<span class="badge bridge">Bridge</span>' : '';
+        const slaveInfoHtml = isSlave ? `<div class="card-row slave-info"><span class="label">Esclave de</span><span class="value">${iface.bridgeMaster}</span></div>` : '';
+
+        let footerHtml = '';
+        if (isSlave) {
+            footerHtml = `<button class="btn secondary" disabled>Esclave de ${iface.bridgeMaster}</button>`;
+        } else if (isBridge) {
+            footerHtml = `
+                <button class="btn primary" onclick='editBridge(${JSON.stringify(iface)})'>Configurer</button>
+                <button class="btn danger" onclick='deleteBridge("${iface.name}")'>Supprimer</button>
+            `;
+        } else {
+            footerHtml = `<button class="btn primary" onclick='editNetwork(${JSON.stringify(iface)})'>Configurer</button>`;
+        }
+
+        return `
+        <div class="card ${isSlave ? 'slave' : ''} ${isBridge ? 'bridge-card' : ''}" data-id="${iface.name}">
             <div class="card-header">
-                <h3>${iface.name}</h3>
+                <h3>${iface.name} ${badgeHtml}</h3>
                 <span class="status ${iface.status}">${iface.status}</span>
             </div>
             <div class="card-body">
+                ${slaveInfoHtml}
                 <div class="card-row">
                     <span class="label">Mode</span>
                     <span class="value">${iface.dhcp ? 'DHCP' : 'Statique'}</span>
@@ -168,10 +187,11 @@ function renderNetworkInterfaces() {
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn primary" onclick='editNetwork(${JSON.stringify(iface)})'>Configurer</button>
+                ${footerHtml}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 async function loadSerialPorts() {
@@ -389,6 +409,162 @@ async function saveSerial() {
 
 function closeModal() {
     document.getElementById('modal').classList.add('hidden');
+}
+
+async function openBridgeModal() {
+    const res = await API.get('/bridge/available');
+    if (!res.success) {
+        showToast('Erreur: ' + res.message, 'error');
+        return;
+    }
+
+    const availableIfaces = res.data || [];
+    if (availableIfaces.length < 1) {
+        showToast('Aucune interface disponible pour créer un bridge', 'error');
+        return;
+    }
+
+    const ifaceCheckboxes = availableIfaces.map(iface => `
+        <label class="checkbox-item">
+            <input type="checkbox" name="interfaces" value="${iface}">
+            ${iface}
+        </label>
+    `).join('');
+
+    document.getElementById('modal-title').textContent = 'Créer un bridge';
+    document.getElementById('modal-body').innerHTML = `
+        <form id="bridge-form">
+            <div class="form-group">
+                <label>Nom du bridge</label>
+                <input type="text" name="name" value="br0" pattern="^br\\d+$" required>
+                <small>Format: br0, br1, br2...</small>
+            </div>
+            <div class="form-group">
+                <label>Interfaces à inclure</label>
+                <div class="checkbox-group-list">
+                    ${ifaceCheckboxes}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Adresse IP *</label>
+                <input type="text" name="ip" required pattern="^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$" placeholder="192.168.1.100">
+            </div>
+            <div class="form-group">
+                <label>Masque de sous-réseau *</label>
+                <input type="text" name="netmask" value="255.255.255.0" required>
+            </div>
+            <div class="form-group">
+                <label>Passerelle</label>
+                <input type="text" name="gateway" placeholder="192.168.1.1">
+            </div>
+            <div class="form-group">
+                <label>DNS (séparés par des virgules)</label>
+                <input type="text" name="dns" placeholder="8.8.8.8, 8.8.4.4">
+            </div>
+        </form>
+    `;
+
+    document.getElementById('modal-save').onclick = createBridge;
+    document.getElementById('modal').classList.remove('hidden');
+}
+
+async function createBridge() {
+    const form = document.getElementById('bridge-form');
+    const checkedBoxes = form.querySelectorAll('input[name="interfaces"]:checked');
+    const interfaces = Array.from(checkedBoxes).map(cb => cb.value);
+
+    if (interfaces.length < 1) {
+        showToast('Sélectionnez au moins une interface', 'error');
+        return;
+    }
+
+    const dnsInput = form.dns.value.trim();
+    const dnsArray = dnsInput ? dnsInput.split(',').map(s => s.trim()).filter(s => s) : [];
+
+    const data = {
+        name: form.name.value,
+        interfaces: interfaces,
+        ip: form.ip.value,
+        netmask: form.netmask.value,
+        gateway: form.gateway.value,
+        dns: dnsArray
+    };
+
+    const res = await API.post('/bridge/create', data);
+    if (res.success) {
+        showToast('Bridge créé avec succès', 'success');
+        closeModal();
+        setTimeout(loadNetworkInterfaces, 1000);
+    } else {
+        showToast(res.message, 'error');
+    }
+}
+
+function editBridge(bridge) {
+    const dnsValue = (bridge.dns && bridge.dns.length > 0) ? bridge.dns.join(', ') : '';
+
+    document.getElementById('modal-title').textContent = `Configurer ${bridge.name}`;
+    document.getElementById('modal-body').innerHTML = `
+        <form id="bridge-config-form">
+            <input type="hidden" name="name" value="${bridge.name}">
+            <div class="form-group">
+                <label>Adresse IP *</label>
+                <input type="text" name="ip" value="${bridge.ip || ''}" required pattern="^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$">
+            </div>
+            <div class="form-group">
+                <label>Masque de sous-réseau *</label>
+                <input type="text" name="netmask" value="${bridge.netmask || '255.255.255.0'}" required>
+            </div>
+            <div class="form-group">
+                <label>Passerelle</label>
+                <input type="text" name="gateway" value="${bridge.gateway || ''}">
+            </div>
+            <div class="form-group">
+                <label>DNS (séparés par des virgules)</label>
+                <input type="text" name="dns" value="${dnsValue}" placeholder="8.8.8.8, 8.8.4.4">
+            </div>
+        </form>
+    `;
+
+    document.getElementById('modal-save').onclick = saveBridgeConfig;
+    document.getElementById('modal').classList.remove('hidden');
+}
+
+async function saveBridgeConfig() {
+    const form = document.getElementById('bridge-config-form');
+    const dnsInput = form.dns.value.trim();
+    const dnsArray = dnsInput ? dnsInput.split(',').map(s => s.trim()).filter(s => s) : [];
+
+    const data = {
+        name: form.name.value,
+        ip: form.ip.value,
+        netmask: form.netmask.value,
+        gateway: form.gateway.value,
+        dns: dnsArray
+    };
+
+    const res = await API.post('/bridge/configure', data);
+    if (res.success) {
+        showToast('Bridge configuré avec succès', 'success');
+        closeModal();
+        setTimeout(loadNetworkInterfaces, 1000);
+    } else {
+        showToast(res.message, 'error');
+    }
+}
+
+async function deleteBridge(name) {
+    if (!confirm(`Supprimer le bridge ${name} ?\n\nLes interfaces seront libérées et leurs configurations précédentes restaurées si disponibles.`)) {
+        return;
+    }
+
+    const res = await API.post(`/bridge/delete/${name}`, {});
+    if (res.success) {
+        showToast('Bridge supprimé avec succès', 'success');
+        setTimeout(loadNetworkInterfaces, 1000);
+    } else {
+        showToast(res.message, 'error');
+    }
 }
 
 function showToast(message, type) {
