@@ -1,126 +1,126 @@
 # MoxamonGO
 
-Serveur de configuration web pour equipements MOXA (UC-8112-LX, UC-2100, UC-3100, UC-5100 series).
+Serveur de configuration web pour équipements MOXA (UC-8112-LX, UC-2100, UC-3100, UC-5100 series).
 
-Interface legere permettant de configurer a distance les interfaces reseau, bridges et ports serie des passerelles MOXA via un navigateur web.
+Interface légère permettant de configurer à distance les interfaces réseau, bridges et ports série des passerelles MOXA via un navigateur web.
 
-## Fonctionnalites
+## Fonctionnalités
 
-### Configuration reseau
+### Configuration réseau
 
-- Affichage des interfaces reseau (eth0, eth1, lan0, br0, etc.)
+- Affichage des interfaces réseau (eth0, eth1, lan0, br0, etc.)
 - Configuration IP statique ou DHCP
-- Parametrage du masque de sous-reseau, passerelle et DNS
+- Paramétrage du masque de sous-réseau, passerelle et DNS
 - Affichage de l'adresse MAC et du statut (up/down)
 - Sauvegarde automatique avant modification
-- Detection des interfaces esclaves de bridge
+- Détection des interfaces esclaves de bridge
 
-### Bridge reseau
+### Bridge réseau
 
-- Creation de bridges (br0, br1, etc.) avec selection des interfaces
+- Création de bridges (br0, br1, etc.) avec sélection des interfaces
 - Configuration IP obligatoire sur le bridge
 - Suppression du bridge avec restauration des interfaces
 - Persistance dans /etc/network/interfaces via pre-up (sans bridge-utils)
 - Sauvegarde et restauration automatique des configurations
 
-### Configuration ports serie
+### Configuration ports série
 
-- Detection automatique des ports physiques MOXA (ttyM0, ttyM1)
-- Selection du mode : RS232, RS422, RS485-2W, RS485-4W
-- Configuration du debit (300 a 921600 bauds)
-- Parametrage des bits de donnees, stop et parite
-- Controle de flux (none, hardware, software)
+- Détection automatique des ports physiques MOXA (ttyM0, ttyM1)
+- Sélection du mode : RS232, RS422, RS485-2W, RS485-4W
+- Configuration du débit (300 à 921600 bauds)
+- Paramétrage des bits de données, stop et parité
+- Contrôle de flux (none, hardware, software)
 - Sauvegarde automatique avant modification
 
-### Scanner de decouverte
+### Scanner de découverte
 
-- Executable Windows (moxa-scanner.exe) pour detecter les UC sur le reseau
+- Exécutable Windows (moxa-scanner.exe) pour détecter les UC sur le réseau
 - Envoi broadcast UDP sur le port 54321
-- Detection cross-subnet (les UC repondent en unicast et broadcast)
+- Détection cross-subnet (les UC répondent en unicast et broadcast)
 - Affichage du nom produit, adresse IP, version et hostname
 
-### Securite
+### Sécurité
 
 - Authentification par login/mot de passe
 - Sessions avec expiration automatique (24h)
 - Hashage bcrypt des mots de passe
-- HTTPS avec certificat auto-signe
+- HTTPS avec certificat auto-signé
 - Changement de mot de passe via l'interface
 
-### Caracteristiques techniques
+### Caractéristiques techniques
 
-- Binaire unique sans dependances (5-8 Mo)
-- Consommation memoire faible (10-15 Mo RAM)
+- Binaire unique sans dépendances (5-8 Mo)
+- Consommation mémoire faible (10-15 Mo RAM)
 - Interface web responsive avec auto-refresh
-- API REST complete
+- API REST complète
 - Compatible init.d (BusyBox)
-- Demarrage automatique au boot
-- Service de decouverte UDP integre
+- Démarrage automatique au boot
+- Service de découverte UDP intégré
 
-## Prerequis
+## Prérequis
 
-### Machine de developpement (Windows)
+### Machine de développement (Windows)
 
-- Go 1.21 ou superieur
-- Client SSH (integre a Windows 10/11)
+- Go 1.21 ou supérieur
+- Client SSH (intégré à Windows 10/11)
 
-### Equipement MOXA
+### Équipement MOXA
 
 - Linux Moxa 4.x (kernel 4.4.0+)
-- Acces SSH ou console serie
-- Acces root (sudo)
+- Accès SSH ou console série
+- Accès root (sudo)
 - 10 Mo d'espace disque disponible
 
 ## Installation
 
-### Etape 1 : Installer Go
+### Étape 1 : Installer Go
 
 ```
 winget install GoLang.go
 ```
 
-Ou telecharger depuis https://go.dev/dl/
+Ou télécharger depuis https://go.dev/dl/
 
-Verifier l'installation :
+Vérifier l'installation :
 
 ```powershell
 go version
 ```
 
-### Etape 2 : Compiler et deployer
+### Étape 2 : Compiler et déployer
 
-Depuis le repertoire du projet :
+Depuis le répertoire du projet :
 
 ```powershell
 .\scripts\build.ps1 -a <IP_MOXA>
 ```
 
-Ce script compile le serveur pour ARM, cree l'archive et la transfère sur l'UC.
+Ce script compile le serveur pour ARM, crée l'archive et la transfère sur l'UC.
 
-### Etape 3 : Installer sur le MOXA
+### Étape 3 : Installer sur le MOXA
 
 ```bash
 ssh moxa@<IP_MOXA>
 cd /tmp && tar xzf moxa-config-1.0.0.tar.gz && cd moxa-config-1.0.0 && sudo sh ./install.sh
 ```
 
-### Etape 4 : Acceder a l'interface
+### Étape 4 : Accéder à l'interface
 
 ```
 https://<IP_MOXA>:8080
 ```
 
-Identifiants par defaut : admin / admin
+Identifiants par défaut : admin / admin
 
-## Scanner de decouverte
+## Scanner de découverte
 
-Le script de build genere egalement `moxa-scanner.exe` pour Windows.
+Le script de build génère également `moxa-scanner.exe` pour Windows.
 
 ```powershell
 .\moxa-scanner.exe
 ```
 
-Affiche toutes les UC detectees sur le reseau :
+Affiche toutes les UC détectées sur le réseau :
 
 ```
 +----------------+-----------------+
@@ -130,7 +130,7 @@ Affiche toutes les UC detectees sur le reseau :
 | UC-2112-LX     | 192.168.3.50    |
 +----------------+-----------------+
 
-2 UC trouve(s)
+2 UC trouvé(s)
 ```
 
 ## Utilisation
@@ -139,77 +139,77 @@ Affiche toutes les UC detectees sur le reseau :
 
 L'interface comporte deux onglets :
 
-**Reseau** : Liste les interfaces reseau et bridges. Bouton "Creer un bridge" pour configurer un pont reseau. Les interfaces esclaves sont grisees et indiquent leur bridge parent.
+**Réseau** : Liste les interfaces réseau et bridges. Bouton "Créer un bridge" pour configurer un pont réseau. Les interfaces esclaves sont grisées et indiquent leur bridge parent.
 
-**Ports serie** : Liste les ports ttyM0 et ttyM1. Cliquer sur "Configurer" pour modifier le mode et les parametres.
+**Ports série** : Liste les ports ttyM0 et ttyM1. Cliquer sur "Configurer" pour modifier le mode et les paramètres.
 
-### Creer un bridge
+### Créer un bridge
 
-1. Cliquer sur "Creer un bridge"
-2. Selectionner les interfaces a inclure (eth0, eth1, etc.)
+1. Cliquer sur "Créer un bridge"
+2. Sélectionner les interfaces à inclure (eth0, eth1, etc.)
 3. Configurer l'IP, masque, passerelle et DNS
 4. Valider
 
-Le bridge est cree immediatement et persiste apres reboot.
+Le bridge est créé immédiatement et persiste après reboot.
 
 ### Supprimer un bridge
 
 1. Cliquer sur "Supprimer" sur la carte du bridge
 2. Confirmer la suppression
 
-Les interfaces sont liberees et leurs configurations precedentes restaurees.
+Les interfaces sont libérées et leurs configurations précédentes restaurées.
 
 ## API REST
 
 ### Authentification
 
-| Methode | Endpoint | Description |
+| Méthode | Endpoint | Description |
 |---------|----------|-------------|
 | POST | /api/auth/login | Connexion |
-| POST | /api/auth/logout | Deconnexion |
-| GET | /api/auth/check | Verifier la session |
+| POST | /api/auth/logout | Déconnexion |
+| GET | /api/auth/check | Vérifier la session |
 | POST | /api/auth/change-password | Changer le mot de passe |
 
 ### Reseau
 
-| Methode | Endpoint | Description |
+| Méthode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | /api/network/interfaces | Liste les interfaces |
-| GET | /api/network/interface/{name} | Details d'une interface |
+| GET | /api/network/interface/{name} | Détails d'une interface |
 | POST | /api/network/configure | Configure une interface |
 | GET | /api/network/backups | Liste les sauvegardes |
 | POST | /api/network/restore/{name} | Restaure un backup |
 
 ### Bridge
 
-| Methode | Endpoint | Description |
+| Méthode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | /api/bridge/list | Liste les bridges |
-| GET | /api/bridge/{name} | Details d'un bridge |
+| GET | /api/bridge/{name} | Détails d'un bridge |
 | GET | /api/bridge/available | Interfaces disponibles |
-| POST | /api/bridge/create | Cree un bridge |
+| POST | /api/bridge/create | Crée un bridge |
 | POST | /api/bridge/configure | Configure un bridge |
 | POST | /api/bridge/delete/{name} | Supprime un bridge |
 
-### Ports serie
+### Ports série
 
-| Methode | Endpoint | Description |
+| Méthode | Endpoint | Description |
 |---------|----------|-------------|
 | GET | /api/serial/ports | Liste les ports |
-| GET | /api/serial/port/{device} | Details d'un port |
+| GET | /api/serial/port/{device} | Détails d'un port |
 | POST | /api/serial/configure | Configure un port |
 | GET | /api/serial/options | Options disponibles |
 
-### Systeme
+### Système
 
-| Methode | Endpoint | Description |
+| Méthode | Endpoint | Description |
 |---------|----------|-------------|
-| GET | /api/health | Etat du service |
-| GET | /api/system/info | Infos systeme |
+| GET | /api/health | État du service |
+| GET | /api/system/info | Infos système |
 
 ## Exemples API
 
-Creer un bridge :
+Créer un bridge :
 
 ```bash
 curl -X POST https://<IP_MOXA>:8080/api/bridge/create \
@@ -231,7 +231,7 @@ curl -X POST https://<IP_MOXA>:8080/api/bridge/delete/br0 \
   -H "Cookie: session=<TOKEN>"
 ```
 
-Configurer eth0 en statique :
+Configurer eth0 en IP statique :
 
 ```bash
 curl -X POST https://<IP_MOXA>:8080/api/network/configure \
@@ -247,7 +247,7 @@ curl -X POST https://<IP_MOXA>:8080/api/network/configure \
   }'
 ```
 
-Configurer un port serie en RS485 :
+Configurer un port série en RS485 :
 
 ```bash
 curl -X POST https://<IP_MOXA>:8080/api/serial/configure \
@@ -270,10 +270,10 @@ curl -X POST https://<IP_MOXA>:8080/api/serial/configure \
 # Statut
 sudo /etc/init.d/moxa-config status
 
-# Redemarrer
+# Redémarrer
 sudo /etc/init.d/moxa-config restart
 
-# Arreter
+# Arrêter
 sudo /etc/init.d/moxa-config stop
 
 # Logs
@@ -325,11 +325,11 @@ moxa-config/
 
 ### Variables d'environnement
 
-| Variable | Defaut | Description |
+| Variable | Défaut | Description |
 |----------|--------|-------------|
 | MOXA_PORT | 8080 | Port HTTPS du serveur |
-| MOXA_CONFIGDIR | /etc/moxa-config | Repertoire des configurations |
-| MOXA_BACKUPDIR | /var/moxa-config/backups | Repertoire des sauvegardes |
+| MOXA_CONFIGDIR | /etc/moxa-config | Répertoire des configurations |
+| MOXA_BACKUPDIR | /var/moxa-config/backups | Répertoire des sauvegardes |
 | MOXA_LOGFILE | /var/log/moxa-config.log | Fichier de log |
 | MOXA_TLS | true | Activer HTTPS |
 
@@ -341,9 +341,9 @@ sudo vi /etc/init.d/moxa-config
 sudo /etc/init.d/moxa-config restart
 ```
 
-## Compatibilite
+## Compatibilité
 
-Teste sur :
+Testé sur :
 
 - MOXA UC-8112-LX (ARM Cortex-A8)
 - MOXA UC-2112-LX
@@ -351,34 +351,34 @@ Teste sur :
 
 Compatible avec tous les UC-xxxx sous Linux Moxa.
 
-## Depannage
+## Dépannage
 
-### Le service ne demarre pas
+### Le service ne démarre pas
 
 ```bash
 cat /var/log/moxa-config.log
 /opt/moxa-config/moxa-config
 ```
 
-### Interface reseau non detectee
+### Interface réseau non détectée
 
-Les interfaces detectees sont celles commencant par eth, lan, br ou wlan.
+Les interfaces détectées sont celles commençant par eth, lan, br ou wlan.
 
-### Port serie non detecte
+### Port série non détecté
 
-Seuls les ports /dev/ttyM0 et /dev/ttyM1 sont affiches (ports physiques MOXA).
+Seuls les ports /dev/ttyM0 et /dev/ttyM1 sont affichés (ports physiques MOXA).
 
-### Bridge non persiste apres reboot
+### Bridge non persisté après reboot
 
-Verifier le contenu de /etc/network/interfaces. La configuration doit contenir les directives pre-up.
+Vérifier le contenu de /etc/network/interfaces. La configuration doit contenir les directives pre-up.
 
-### Scanner ne detecte pas toutes les UC
+### Scanner ne détecte pas toutes les UC
 
-- Verifier que le port UDP 54321 n'est pas bloque
+- Vérifier que le port UDP 54321 n'est pas bloqué
 - Les UC doivent avoir le service moxa-config actif
-- Les UC sur d'autres sous-reseaux sont detectees si elles sont sur le meme segment L2
+- Les UC sur d'autres sous-réseaux sont détectées si elles sont sur le même segment L2
 
-## Desinstallation
+## Désinstallation
 
 ```bash
 sudo /etc/init.d/moxa-config stop
@@ -387,7 +387,7 @@ sudo rm -rf /opt/moxa-config
 sudo reboot
 ```
 
-Les configurations sont conservees dans /etc/moxa-config.
+Les configurations sont conservées dans /etc/moxa-config.
 
 ## Licence
 
